@@ -9,6 +9,19 @@ object BlockList {
     private const val KEY_DOMAINS = "domains"
     private const val KEY_ENABLED = "enabled"
 
+    // Only a salted SHA-256 hash of the removal password is stored here, never the password.
+    private const val PW_SALT = "123a7a50fc518c77"
+    private const val PW_HASH = "6b0c4c4bc8bdb106d6866a191f68443a3fa69611d0742f54295b2b84c0d1ead1"
+
+    fun checkPassword(input: String): Boolean {
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+            .digest((PW_SALT + input).toByteArray(Charsets.UTF_8))
+        val hex = digest.joinToString("") { "%02x".format(it) }
+        return java.security.MessageDigest.isEqual(
+            hex.toByteArray(Charsets.UTF_8), PW_HASH.toByteArray(Charsets.UTF_8)
+        )
+    }
+
     /** Turns "https://www.example.com/page?x=1" into "example.com". Returns null if invalid. */
     fun extractDomain(input: String): String? {
         var s = input.trim().lowercase()
